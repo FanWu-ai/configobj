@@ -999,6 +999,29 @@ class TestQuotes:
     def test_handle_unbalanced(self, i):
         self.assert_bad_quote_message(i, '"""\'\'\'')
 
+    @pytest.mark.parametrize('list_values', [True, False])
+    @pytest.mark.parametrize('quote', ['"', "'"])
+    @pytest.mark.parametrize('template', [
+        '{other}{triple}hello{triple} # world',
+        'before\n{triple}\nafter',
+        '{triple}\nvalue',
+        'value\n{triple}',
+    ])
+    def test_triple_quote_round_trip(self, list_values, quote, template):
+        other = "'" if quote == '"' else '"'
+        value = template.format(other=other, triple=quote * 3)
+        config = ConfigObj(list_values=list_values)
+        config['section'] = {'value': value}
+        config['section'].inline_comments['value'] = '# preserved comment'
+        output = io.BytesIO()
+
+        config.write(output)
+        output.seek(0)
+        reloaded = ConfigObj(output, list_values=list_values)
+
+        assert reloaded['section']['value'] == value
+        assert reloaded['section'].inline_comments['value'] == '# preserved comment'
+
     def test_handle_unallowed_newline(self, i):
         newline = '\n'
         self.assert_bad_quote_message(i, newline, multiline=False)

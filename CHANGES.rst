@@ -4,6 +4,9 @@ Changelog
 Unreleased
 """"""""""
 
+* select triple-quote delimiters absent from the value when writing, preventing
+  embedded triple quotes from truncating values or producing invalid config files
+
 * raise ``InterpolationError`` instead of leaking a raw ``TypeError`` when a
   value interpolates a reference to an option whose value is a list
 
